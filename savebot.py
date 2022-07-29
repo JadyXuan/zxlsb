@@ -3,12 +3,25 @@ from watchdog.events import *
 import tkinter as tk
 from tkinter import filedialog
 import time
+import threading
 import re
-import sys
+import sys, os
 
 
 SAVEPATH = ""
 WATCHPATH = ""
+SAVEDIC = ""
+
+
+def save_dic_choose():
+    global SAVEDIC
+    while True:
+        dic_name = time.strftime("%y-%m-%d")
+        SAVEDIC = dic_name + "/"
+        if not os.path.exists(SAVEPATH + SAVEDIC):
+            os.makedirs(SAVEPATH + SAVEDIC)
+        time.sleep(600)
+
 
 class WechatImageDecoder:
     def __init__(self, dat_file):
@@ -57,7 +70,7 @@ class WechatImageDecoder:
             buf = bytearray(f.read())
         file_type, magic = guess_encoding(buf)
 
-        img_file = SAVEPATH + str(re.sub(r'.dat$', '.' + file_type, file_name))
+        img_file = SAVEPATH + SAVEDIC + str(re.sub(r'.dat$', '.' + file_type, file_name))
         print(img_file)
 
         with open(img_file, 'wb') as f:
@@ -94,7 +107,7 @@ class Watcher(FileSystemEventHandler):
             srcpath = srcpath.replace("\\", "/")
             temp_path = srcpath.split(".dat")[0]
             src_path = temp_path + ".dat"
-            if "Image" in src_path and "rst" not in src_path:
+            if "Image" in src_path and "rst" not in src_path:  # 有时候会出现rst结尾的文件，没弄懂触发原因，跳过
                 print("检测到图片:" + srcpath)
                 time.sleep(1)
                 WechatImageDecoder(src_path)
@@ -110,21 +123,26 @@ def submit():
     root.destroy()
     pass
 
+
 def path_choose():
     path = filedialog.askdirectory(title="请选择路径")
     return path
+
 
 def save_path_choose():
     path = path_choose()
     save_var.set(path)
     print("save path 指定:" + path)
 
+
 def watch_path_choose():
     path = path_choose()
     watch_var.set(path)
     print("watch path 指定:" + path)
 
+
 if __name__ == "__main__":
+    daytime_thread = threading.Thread(target=save_dic_choose)
     root = tk.Tk()
     root.title("微信自动保存图片")
     root.geometry("333x200")
@@ -157,6 +175,8 @@ if __name__ == "__main__":
     observer = Observer()
     event_handler = Watcher()
     observer.schedule(event_handler, path, True)
+
+    daytime_thread.start()
     observer.start()
     try:
         while True:

@@ -4,7 +4,7 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/torchenv" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.7 (WechatBot)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.7 (zxlsb)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="TestRunnerService">
