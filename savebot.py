@@ -115,60 +115,64 @@ class Watcher(FileSystemEventHandler):
         pass
 
 
-def submit():
-    global SAVEPATH
-    global WATCHPATH
-    SAVEPATH = save_var.get() + "/"
-    WATCHPATH = watch_var.get()
-    root.destroy()
-    pass
+class SaveUI:
+    def __init__(self):
+        self.root = tk.Tk()
+        self.root.title("微信自动保存图片")
+        self.root.geometry("333x200")
+        self.save_var = tk.StringVar()
+        self.watch_var = tk.StringVar()
+        with open('config.ini', 'a+') as config:
+            config.seek(0, 0)
+            con_path = config.readline()
+            if con_path:
+                self.save_var.set(con_path.strip())
+                self.watch_var.set(config.readline())
+        text1 = tk.Label(self.root, text='选择保存目录').place(x=10, y=50)
+        text2 = tk.Label(self.root, text='微信监控目录').place(x=10, y=100)
+        submit_button = tk.Button(self.root, text="确定", command=self.submit).place(x=150, y=160)
+        save_path_button = tk.Button(self.root, text="选择", command=self.save_path_choose).place(x=250, y=50)
+        watch_path_button = tk.Button(self.root, text="选择", command=self.watch_path_choose).place(x=250, y=100)
+        save_entry = tk.Entry(self.root, textvariable=self.save_var)
+        save_entry.place(x=100, y=50)
+        watch_entry = tk.Entry(self.root, textvariable=self.watch_var)
+        watch_entry.place(x=100, y=100)
+
+    def loop(self):
+        self.root.mainloop()
+
+    def submit(self):
+        global SAVEPATH
+        global WATCHPATH
+        SAVEPATH = self.save_var.get() + "/"
+        WATCHPATH = self.watch_var.get()
+        with open('config.ini', 'w') as config:
+            config.write(self.save_var.get())
+            config.write('\n')
+            config.write(self.watch_var.get())
+        self.root.destroy()
+        pass
+
+    def path_choose(self):
+        path = filedialog.askdirectory(title="请选择路径")
+        return path
+
+    def save_path_choose(self):
+        path = self.path_choose()
+        self.save_var.set(path)
+        print("save path 指定:" + path)
 
 
-def path_choose():
-    path = filedialog.askdirectory(title="请选择路径")
-    return path
-
-
-def save_path_choose():
-    path = path_choose()
-    save_var.set(path)
-    print("save path 指定:" + path)
-
-
-def watch_path_choose():
-    path = path_choose()
-    watch_var.set(path)
-    print("watch path 指定:" + path)
+    def watch_path_choose(self):
+        path = self.path_choose()
+        self.watch_var.set(path)
+        print("watch path 指定:" + path)
 
 
 if __name__ == "__main__":
     daytime_thread = threading.Thread(target=save_dic_choose)
-    root = tk.Tk()
-    root.title("微信自动保存图片")
-    root.geometry("333x200")
-    save_var = tk.StringVar()
-    watch_var = tk.StringVar()
-    with open('config.ini', 'a+') as config:
-        config.seek(0, 0)
-        con_path = config.readline()
-        if con_path:
-            save_var.set(con_path.strip())
-            watch_var.set(config.readline())
-
-    text1 = tk.Label(root, text='选择保存目录').place(x=10, y=50)
-    text2 = tk.Label(root, text='微信监控目录').place(x=10, y=100)
-    submit_button = tk.Button(root, text="确定", command = submit).place(x=150, y=160)
-    save_path_button = tk.Button(root, text="选择", command=save_path_choose).place(x=250, y=50)
-    watch_path_button = tk.Button(root, text="选择", command=watch_path_choose).place(x=250, y=100)
-    save_entry = tk.Entry(root, textvariable=save_var)
-    save_entry.place(x=100, y=50)
-    watch_entry = tk.Entry(root, textvariable=watch_var)
-    watch_entry.place(x=100, y=100)
-    root.mainloop()
-    with open('config.ini', 'w') as config:
-        config.write(save_var.get())
-        config.write('\n')
-        config.write(watch_var.get())
+    ui = SaveUI()
+    ui.loop()
     print("图片保存文件夹： " + SAVEPATH)
     print("微信聊天图片文件夹： " + WATCHPATH)
     path = WATCHPATH
